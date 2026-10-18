@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ThreadVault — Conceit, Archives, Degraded &amp; Seraphim</title>
+  <link rel="stylesheet" href="/style.css?v=2">
+<script src="/shop.js?v=2" defer></script>
+<script src="/hero.js?v=1" defer></script>
+</head>
+<body>
+  <div class="announcement">THREADVAULT / FOUR BRANDS. YOUR OWN ROTATION.</div>
+  <header>
+    <a class="logo" href="/" aria-label="ThreadVault home">Thread<br>Vault</a>
+    <nav aria-label="Main navigation"><a href="#collection" data-shop-brand="All">SHOP ALL</a><a href="#brands">THE BRANDS</a><a href="/account">ACCOUNT</a><a href="/seller">SELLER PORTAL</a></nav>
+    <button id="open-cart" class="cart-button">BAG <span id="bag-count">0</span></button>
+  </header>
+  <main>
+    <section class="hero">
+      <div class="hero-copy"><p>FOUR BRANDS / ONE VAULT</p><h1>MAKE IT<br><em>YOUR OWN.</em></h1><a class="light-button" href="#collection" data-shop-brand="All">EXPLORE THE COLLECTION <span aria-hidden="true">↗</span></a></div>
+<div class="hero-art" id="hero-art">
+
+  <div class="hero-product-slider" id="hero-product-slider">
+
+    <div class="hero-slide-stage">
+
+      <img
+        id="hero-image"
+        src="/assets/IMG_5480.PNG"
+        alt="ThreadVault featured product"
+      >
+
+      <div class="hero-slide-number" id="hero-slide-number">
+        01 / 08
+      </div>
+
+    </div>
+
+
+    <button
+      class="hero-slider-arrow hero-slider-prev"
+      id="hero-prev"
+      type="button"
+      aria-label="Previous Archives product"
+    >
+      ←
+    </button>
+
+    <button
+      class="hero-slider-arrow hero-slider-next"
+      id="hero-next"
+      type="button"
+      aria-label="Next Archives product"
+    >
+      →
+    </button>
+
+
+    <div class="hero-slider-dots" id="hero-slider-dots"></div>
+
+  </div>
+
+
+  <a
+    class="hero-feature"
+    id="hero-feature"
+    href="#collection"
+    data-shop-brand="Archives"
+  >
+
+    <span id="hero-label">
+      IN THE VAULT / ARCHIVES
+    </span>
+
+    <strong>
+      <span id="hero-link-text">
+        Explore the collection
+      </span>
+
+      <span aria-hidden="true">↗</span>
+    </strong>
+
+  </a>
+
+</div>   <span class="hero-index">TV / THE INDEPENDENT EDIT</span>
+    </section>
+    <div class="ticker" aria-hidden="true"><div class="ticker-track"><span>CONCEIT ✳ ARCHIVES ✳ DEGRADED ✳ SERAPHIM ✳</span><span>CONCEIT ✳ ARCHIVES ✳ DEGRADED ✳ SERAPHIM ✳</span><span>CONCEIT ✳ ARCHIVES ✳ DEGRADED ✳ SERAPHIM ✳</span><span>CONCEIT ✳ ARCHIVES ✳ DEGRADED ✳ SERAPHIM ✳</span></div></div>
+    <section id="brands" class="brands-section" aria-labelledby="brands-title">
+      <div class="section-title"><h2 id="brands-title">THE BRANDS</h2><span>04 / IN THE VAULT</span></div>
+      <div class="brand-grid">
+        <a class="brand-card" href="#collection" data-shop-brand="Conceit"><span class="brand-number">01 / CONCEIT</span><h3 class="wordmark-conceit">Conceit</h3><span class="brand-status" data-brand-status="Conceit">Explore brand</span><span class="brand-arrow" aria-hidden="true">↗</span></a>
+        <a class="brand-card" href="#collection" data-shop-brand="Archives"><span class="brand-number">02 / ARCHIVES</span><h3 class="wordmark-archives">Archives</h3><span class="brand-status" data-brand-status="Archives">Explore brand</span><span class="brand-arrow" aria-hidden="true">↗</span></a>
+        <a class="brand-card" href="#collection" data-shop-brand="Degraded"><span class="brand-number">03 / DEGRADED</span><h3 class="wordmark-degraded">Degraded</h3><span class="brand-status" data-brand-status="Degraded">Explore brand</span><span class="brand-arrow" aria-hidden="true">↗</span></a>
+        <a class="brand-card" href="#collection" data-shop-brand="Seraphim"><span class="brand-number">04 / SERAPHIM</span><h3 class="wordmark-seraphim">Seraphim</h3><span class="brand-status" data-brand-status="Seraphim">Explore brand</span><span class="brand-arrow" aria-hidden="true">↗</span></a>
+      </div>
+    </section>
+    <section id="collection" class="collection" aria-labelledby="collection-title">
+      <div class="section-title"><h2 id="collection-title">ALL PRODUCTS</h2><span id="product-count" role="status"></span></div>
+      <div class="brand-filter" role="group" aria-label="Filter by brand">
+        <button data-brand="All" aria-pressed="true">All brands</button><button data-brand="Conceit" aria-pressed="false">Conceit</button><button data-brand="Archives" aria-pressed="false">Archives</button><button data-brand="Degraded" aria-pressed="false">Degraded</button><button data-brand="Seraphim" aria-pressed="false">Seraphim</button>
+      </div>
+      <div class="toolbar">
+        <div id="categories" class="categories" role="group" aria-label="Product category"><button data-category="All" aria-pressed="true">All</button></div>
+        <label class="search-label">Search <input id="search" type="search" placeholder="Find your next piece" aria-label="Search products"></label>
+        <label class="sort-label">Sort <select id="sort"><option value="featured">Featured</option><option value="low">Price: low to high</option><option value="high">Price: high to low</option></select></label>
+      </div>
+      <div id="products" class="grid" aria-live="polite"><p>Loading the collection…</p></div>
+    </section>
+    <section id="about" class="about"><p>THE VAULT</p><h2>FOUR BRANDS.<br>ENDLESS EXPRESSION.</h2><p>Conceit, Archives, Degraded and Seraphim. Discover the pieces that speak to you and build your everyday rotation — one thread at a time.</p></section>
+  </main>
+  <footer><strong>ThreadVault</strong><p>Local marketplace prototype · No payment processing</p><a href="#collection" data-shop-brand="All">Back to shop</a></footer>
+  <dialog id="product-dialog" aria-labelledby="detail-title"><button class="close" data-close="product-dialog" aria-label="Close product details">×</button><div id="product-details"></div></dialog>
+  <dialog id="cart-dialog" aria-labelledby="cart-title"><div class="dialog-heading"><h2 id="cart-title">YOUR BAG</h2><button class="close" data-close="cart-dialog" aria-label="Close shopping bag">×</button></div><div id="cart-items"></div><div id="cart-bottom"></div></dialog>
+  <dialog id="checkout-dialog" aria-labelledby="checkout-title"><button class="close" data-close="checkout-dialog" aria-label="Close checkout">×</button><p>PLACE ORDER</p><h2 id="checkout-title">REVIEW YOUR BAG</h2><div id="checkout-summary"></div><label class="priority-label" for="order-priority">Processing priority (seller queue order only)</label><select id="order-priority"><option value="standard">Standard</option><option value="express">Express</option><option value="urgent">Urgent</option></select><p>No payment or delivery-time promise is included. <a href="/account">Sign in or create a customer account</a> to place your order.</p><button class="primary" id="finish-demo">PLACE ORDER</button><p id="checkout-status" role="status"></p></dialog>
+  <div id="toast" role="status"></div>
+</body>
+</html>

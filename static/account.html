@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ThreadVault — Account</title>
+  <link rel="stylesheet" href="/style.css?v=3">
+  <script src="/account.js?v=1" defer></script>
+</head>
+<body>
+  <div class="announcement">THREADVAULT / CUSTOMER ACCOUNT</div>
+  <header>
+    <a class="logo" href="/">Thread<br>Vault</a>
+    <nav aria-label="Main navigation"><a href="/">SHOP</a><a href="/seller">SELLER PORTAL</a></nav>
+    <button id="account-logout" class="cart-button" hidden>LOG OUT</button>
+  </header>
+  <main class="portal">
+    <p class="eyebrow">YOUR ACCOUNT</p>
+    <h1>ACCOUNT</h1>
+    <p id="account-message" class="muted" role="status"></p>
+    <section id="auth-panel" class="portal-panel">
+      <div class="portal-columns">
+        <form id="customer-login" class="portal-form">
+          <h2>Sign in</h2>
+          <label>Email<input name="email" type="email" required autocomplete="email"></label>
+          <label>Password<input name="password" type="password" required autocomplete="current-password"></label>
+          <button class="primary" type="submit">SIGN IN</button>
+        </form>
+        <form id="customer-register" class="portal-form">
+          <h2>Create customer account</h2>
+          <label>Name<input name="display_name" required maxlength="120"></label>
+          <label>Email<input name="email" type="email" required autocomplete="email"></label>
+          <label>Password<input name="password" type="password" required minlength="8" autocomplete="new-password"></label>
+          <input name="role" type="hidden" value="customer">
+          <button class="primary" type="submit">CREATE ACCOUNT</button>
+        </form>
+      </div>
+    </section>
+    <section id="customer-orders" class="portal-panel" hidden>
+      <h2 id="customer-heading">Your orders</h2>
+      <div id="customer-order-list"></div>
+    </section>
+  </main>
+  <footer><strong>ThreadVault</strong><p>Local marketplace prototype · No payment processing</p><a href="/">Back to shop</a></footer>
+</body>
+</html>

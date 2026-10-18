@@ -1,0 +1,82 @@
+[
+  {
+    "id": 101,
+    "brand": "Archives",
+    "name": "STRIPED STATEMENT TEE — BURGUNDY",
+    "category": "Tees",
+    "price": null,
+    "sizes": [],
+    "image": "/assets/IMG_5474.PNG",
+    "description": "Burgundy and cream striped tee with a contrast crew neck and statement chest graphic."
+  },
+  {
+    "id": 102,
+    "brand": "Archives",
+    "name": "LOGO PANTS — CAMO",
+    "category": "Bottoms",
+    "price": null,
+    "sizes": [],
+    "image": "/assets/IMG_5475.PNG",
+    "description": "Camouflage pants with an elastic waist and a large white Archives logo down the leg."
+  },
+  {
+    "id": 103,
+    "brand": "Archives",
+    "name": "LOGO HOODIE — NAVY",
+    "category": "Hoodies",
+    "price": null,
+    "sizes": [],
+    "image": "/assets/IMG_5476.PNG",
+    "description": "Navy pullover hoodie with a small chest monogram, cream sleeve lettering and a front pouch pocket. Front and back views shown."
+  },
+  {
+    "id": 104,
+    "brand": "Archives",
+    "name": "LOGO CREWNECK — BROWN",
+    "category": "Sweatshirts",
+    "price": null,
+    "sizes": [],
+    "image": "/assets/IMG_5477.PNG",
+    "description": "Brown crewneck sweatshirt with an orange Archives chest logo and matching sleeve monogram."
+  },
+  {
+    "id": 105,
+    "brand": "Archives",
+    "name": "POOLSIDE SLEEVELESS TEE — WHITE",
+    "category": "Tees",
+    "price": null,
+    "sizes": [],
+    "image": "/assets/IMG_5478.PNG",
+    "description": "White sleeveless tee with a poolside and palm-tree graphic, finished with red Archives script."
+  },
+  {
+    "id": 106,
+    "brand": "Archives",
+    "name": "SHATTERED MONOGRAM TEE — WHITE",
+    "category": "Tees",
+    "price": null,
+    "sizes": [],
+    "image": "/assets/IMG_5479.PNG",
+    "description": "White short-sleeve tee featuring a black monogram surrounded by a shattered-stone graphic."
+  },
+  {
+    "id": 107,
+    "brand": "Archives",
+    "name": "GAME OVER TEE — BLACK",
+    "category": "Tees",
+    "price": null,
+    "sizes": [],
+    "image": "/assets/IMG_5480.PNG",
+    "description": "Black graphic tee with a retro handheld game console, Archives lettering and Game Over artwork."
+  },
+  {
+    "id": 108,
+    "brand": "Archives",
+    "name": "ARCH VAULT TEE — CREAM",
+    "category": "Tees",
+    "price": null,
+    "sizes": [],
+    "image": "/assets/IMG_5481.PNG",
+    "description": "Cream tee with oversized distressed ARCH lettering and a smaller VAULT print."
+  }
+]

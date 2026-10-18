@@ -1,0 +1,536 @@
+{
+  "title": "ThreadVault Actual User Journey Architecture",
+  "version": 1,
+  "reviewed_on": "2026-10-18",
+  "evidence_basis": "Static review of the current workspace source after separating DSA workflow helpers into services/. Automated tests cover the extracted helpers; this artifact does not claim a fresh browser-driven runtime exercise.",
+  "purpose": "Canonical, source-grounded content for an interactive architecture and user-journey diagram. This file is the authority for program behavior represented by the diagram.",
+  "scope": {
+    "journey": [
+      "Customer and seller account creation",
+      "Seller product listing and image upload",
+      "Customer catalog browsing and cart",
+      "Customer checkout and stock deduction",
+      "Seller order fulfillment and undo",
+      "Customer order history"
+    ],
+    "not_in_scope": [
+      "Payment collection",
+      "Shipping labels or delivery promises",
+      "Seller payouts",
+      "Email notifications",
+      "Production cloud deployment"
+    ],
+    "runtime": "Local Flask application connected to MariaDB. Flask can serve the static pages directly; optional Apache can serve static content and proxy supported paths."
+  },
+  "components": [
+    {
+      "id": "customer_browser",
+      "name": "Customer browser",
+      "kind": "actor",
+      "description": "Uses the storefront and customer account pages. Account identity is represented by the Flask session cookie; the browser cart is stored separately in localStorage.",
+      "source": ["static/index.html", "static/account.html", "static/shop.js", "static/account.js"]
+    },
+    {
+      "id": "seller_browser",
+      "name": "Seller browser",
+      "kind": "actor",
+      "description": "Uses the seller portal to register, manage the seller's own listings, inspect order items, advance fulfillment status, and undo the seller's latest eligible status change.",
+      "source": ["static/seller.html", "static/seller.js"]
+    },
+    {
+      "id": "shop_js",
+      "name": "Storefront browser logic",
+      "kind": "frontend",
+      "description": "Loads the catalog, renders product browsing UI, filters and sorts in the browser, manages the cart, and submits checkout.",
+      "source": ["static/shop.js"],
+      "key_functions": ["save", "renderCategories", "render", "details", "renderCart"]
+    },
+    {
+      "id": "account_js",
+      "name": "Customer account browser logic",
+      "kind": "frontend",
+      "description": "Submits customer login and registration, checks the current session, loads customer orders, and logs out.",
+      "source": ["static/account.js"],
+      "key_functions": ["sendAccountRequest", "loadCustomerAccount"]
+    },
+    {
+      "id": "seller_js",
+      "name": "Seller portal browser logic",
+      "kind": "frontend",
+      "description": "Submits seller login and registration, loads seller products and orders, parses size stock input, uploads images, saves listings, changes order-item status, and requests undo.",
+      "source": ["static/seller.js"],
+      "key_functions": ["api", "parseStock", "loadProducts", "loadOrders", "refreshSellerWorkspace", "loadSellerAccount"]
+    },
+    {
+      "id": "flask_app",
+      "name": "Flask application",
+      "kind": "backend",
+      "description": "Serves the pages and API, validates requests, enforces role checks, calls database-independent workflow services, and persists marketplace state.",
+      "source": ["app.py"],
+      "key_functions": [
+        "register",
+        "login",
+        "logout",
+        "current_account",
+        "list_products",
+        "seller_products",
+        "create_product",
+        "update_product",
+        "delete_product",
+        "upload_product_image",
+        "place_order",
+        "customer_orders",
+        "seller_orders",
+        "update_order_item",
+        "undo_last_status",
+        "validate_product",
+        "product_rows",
+        "legacy_products",
+        "database_connection",
+        "require_role"
+      ]
+    },
+    {
+      "id": "application_services",
+      "name": "DSA workflow services",
+      "kind": "application_layer",
+      "description": "Database-independent functions apply the custom DSA implementations to validated checkout lines, seller work rows, status history, and catalog records. Flask routes own HTTP handling, authorization, database access, and transactions.",
+      "source": ["services/ordering.py", "services/fulfillment.py", "services/catalog.py"],
+      "key_functions": [
+        "order_lines_in_sequence",
+        "order_work_list",
+        "latest_undoable",
+        "search_catalog",
+        "sort_catalog"
+      ]
+    },
+    {
+      "id": "mariadb",
+      "name": "MariaDB",
+      "kind": "database",
+      "description": "Persistent storage for accounts, seller products, stock by size, orders, order items, and status-change history.",
+      "source": ["schema.sql"]
+    },
+    {
+      "id": "dsa_queue",
+      "name": "Linked FIFO Queue",
+      "kind": "data_structure",
+      "description": "order_lines_in_sequence enqueues validated checkout lines and dequeues them in request order. The Flask route performs the stock checks and database updates after receiving this ordered list.",
+      "source": ["dsa/queue.py", "services/ordering.py", "app.py"],
+      "operations": ["enqueue", "dequeue"]
+    },
+    {
+      "id": "dsa_priority_queue",
+      "name": "Binary min-heap PriorityQueue",
+      "kind": "data_structure",
+      "description": "order_work_list inserts seller order-item rows with priority tuple (priority rank, order_id, item_id), then extracts them in that order.",
+      "source": ["dsa/priority_queue.py", "services/fulfillment.py", "app.py"],
+      "operations": ["insert", "extract_min"]
+    },
+    {
+      "id": "dsa_stack",
+      "name": "Linked LIFO Stack",
+      "kind": "data_structure",
+      "description": "latest_undoable pushes eligible history rows supplied in ascending ID order and pops the latest row. The Flask route then verifies and persists the restoration.",
+      "source": ["dsa/stack.py", "services/fulfillment.py", "app.py"],
+      "operations": ["push", "pop"]
+    },
+    {
+      "id": "dsa_search_sort",
+      "name": "Catalog search and sorting algorithms",
+      "kind": "algorithms",
+      "description": "search_catalog uses linear_search_all when a query is supplied, then sort_catalog uses merge_sort by case-folded product name. Browser-side filters and price sorting are separate JavaScript behavior.",
+      "source": ["dsa/searching.py", "dsa/sorting.py", "services/catalog.py", "app.py", "static/shop.js"],
+      "operations": ["linear_search_all", "merge_sort"]
+    },
+    {
+      "id": "catalog_files",
+      "name": "Legacy catalog and image files",
+      "kind": "file_storage",
+      "description": "legacy_products reads products.json and adds legacy entries and image-backed brand entries. These legacy products have no checkout price or stock and are browse-only.",
+      "source": ["products.json", "assets/", "app.py"]
+    },
+    {
+      "id": "uploaded_images",
+      "name": "Uploaded product images",
+      "kind": "file_storage",
+      "description": "upload_product_image saves accepted image uploads under static/uploads using a generated UUID filename. The returned image URL can be stored on a product listing.",
+      "source": ["app.py"]
+    },
+    {
+      "id": "browser_cart",
+      "name": "Browser localStorage cart",
+      "kind": "browser_storage",
+      "description": "shop.js stores cart lines under localStorage key your-brand-cart. This is temporary browser state, not an order or database record.",
+      "source": ["static/shop.js"]
+    },
+    {
+      "id": "flask_session",
+      "name": "Flask session cookie",
+      "kind": "session_state",
+      "description": "Registration and login clear and populate Flask session fields. The default Flask session is cookie-based; there is no session table in schema.sql.",
+      "source": ["app.py"]
+    }
+  ],
+  "database_entities": [
+    {
+      "table": "users",
+      "purpose": "Customer and seller accounts.",
+      "key_fields": ["id", "email", "password_hash", "role", "display_name", "shop_name"],
+      "relationships": ["A seller owns products and is recorded as the seller on their order items.", "A customer owns orders."]
+    },
+    {
+      "table": "products",
+      "purpose": "Seller-owned product listings.",
+      "key_fields": ["id", "seller_id", "name", "category", "description", "price", "image_url", "active"],
+      "relationships": ["seller_id references users.id.", "Products have product_stock rows and can be referenced by order_items."]
+    },
+    {
+      "table": "product_stock",
+      "purpose": "Quantity available per product and size.",
+      "key_fields": ["product_id", "size", "quantity"],
+      "relationships": ["Composite primary key is (product_id, size). product_id references products.id."]
+    },
+    {
+      "table": "orders",
+      "purpose": "Customer order header and processing priority.",
+      "key_fields": ["id", "customer_id", "priority", "created_at"],
+      "relationships": ["customer_id references users.id.", "An order has order_items."]
+    },
+    {
+      "table": "order_items",
+      "purpose": "Purchased product-and-size lines, seller association, price snapshot, and current fulfillment status.",
+      "key_fields": ["id", "order_id", "product_id", "seller_id", "size", "quantity", "unit_price", "status"],
+      "relationships": ["References orders.id, products.id, and users.id as seller.", "Status is read by the customer history and seller portal."]
+    },
+    {
+      "table": "order_status_history",
+      "purpose": "Audit trail of seller status transitions and undo markers.",
+      "key_fields": ["id", "order_item_id", "seller_id", "old_status", "new_status", "changed_at", "undone_at"],
+      "relationships": ["order_item_id references order_items.id.", "seller_id references users.id."]
+    }
+  ],
+  "journey": [
+    {
+      "id": "customer_registration",
+      "title": "Customer creates an account",
+      "entry": "Customer submits the customer registration form in static/account.html.",
+      "steps": [
+        {
+          "id": "customer_register_submit",
+          "actor": "Customer",
+          "function": "account.js submit listener",
+          "action": "Builds a payload from the customer form and calls sendAccountRequest('/api/auth/register', payload).",
+          "request": "POST /api/auth/register with role customer, display_name, email, and password.",
+          "backend": ["app.py register()", "request_data()", "clean_text()"],
+          "persistence": "INSERT users with a Werkzeug generate_password_hash password hash, then commit.",
+          "result": "Flask clears and sets the session, calls current_account(), and returns the user with HTTP 201.",
+          "source": ["static/account.js", "static/account.html", "app.py", "schema.sql"]
+        }
+      ],
+      "output": "A users row with role customer and an active Flask session cookie."
+    },
+    {
+      "id": "seller_registration",
+      "title": "Seller creates an account",
+      "entry": "Seller submits the seller registration form in static/seller.html.",
+      "steps": [
+        {
+          "id": "seller_register_submit",
+          "actor": "Seller",
+          "function": "seller.js submit listener",
+          "action": "Serializes the seller form and calls api('/api/auth/register').",
+          "request": "POST /api/auth/register with role seller, display_name, shop_name, email, and password.",
+          "backend": ["app.py register()", "request_data()", "clean_text()"],
+          "persistence": "INSERT users with a password hash and shop_name, then commit.",
+          "result": "Flask clears and sets the session, calls current_account(), and returns the user with HTTP 201. loadSellerAccount() then checks GET /api/auth/me.",
+          "source": ["static/seller.js", "static/seller.html", "app.py", "schema.sql"]
+        }
+      ],
+      "output": "A users row with role seller and shop_name, and an active Flask session cookie."
+    },
+    {
+      "id": "returning_account_login",
+      "title": "Returning customer or seller signs in",
+      "steps": [
+        {
+          "id": "customer_login",
+          "actor": "Customer",
+          "function": "account.js submit listener then sendAccountRequest()",
+          "request": "POST /api/auth/login with email and password.",
+          "backend": ["app.py login()", "database_connection()", "check_password_hash()"],
+          "action": "Looks up the normalized email, verifies the stored password hash, clears the prior session, and stores the signed-in user's fields in the Flask session.",
+          "result": "Returns the current account; account.js then calls loadCustomerAccount() to load customer order history when the role is customer.",
+          "source": ["static/account.js", "app.py"]
+        },
+        {
+          "id": "seller_login",
+          "actor": "Seller",
+          "function": "seller.js submit listener then api()",
+          "request": "POST /api/auth/login with email and password.",
+          "backend": ["app.py login()", "database_connection()", "check_password_hash()"],
+          "action": "Looks up the normalized email, verifies the stored password hash, clears the prior session, and stores the signed-in user's fields in the Flask session.",
+          "result": "Returns the current account; seller.js then calls loadSellerAccount() to load seller products and orders when the role is seller.",
+          "source": ["static/seller.js", "app.py"]
+        }
+      ],
+      "output": "An authenticated Flask session for the account role. A login replaces the identity in the current browser session.",
+      "note": "The customer login form is on account.html and the seller login form is on seller.html."
+    },
+    {
+      "id": "seller_listing",
+      "title": "Seller creates and manages a product listing",
+      "steps": [
+        {
+          "id": "seller_portal_load",
+          "actor": "Seller",
+          "function": "seller.js loadSellerAccount() then refreshSellerWorkspace()",
+          "action": "Checks /api/auth/me and loads products and orders for the signed-in seller.",
+          "requests": ["GET /api/seller/products", "GET /api/seller/orders"],
+          "backend": ["app.py current_account()", "seller_products()", "seller_orders()", "require_role('seller')", "product_rows(connection, seller_id)"],
+          "persistence": "Reads seller-owned active products and product_stock from MariaDB.",
+          "source": ["static/seller.js", "app.py"]
+        },
+        {
+          "id": "seller_create_product",
+          "actor": "Seller",
+          "function": "seller.js productForm submit listener then parseStock()",
+          "action": "Converts lines such as S:5 to size and quantity objects and sends the product payload.",
+          "request": "POST /api/seller/products.",
+          "backend": ["app.py create_product()", "require_role('seller')", "request_data()", "validate_product()"],
+          "persistence": "Inserts products and product_stock rows in a database transaction and commits.",
+          "result": "Returns the new product id, then seller.js refreshes its workspace.",
+          "source": ["static/seller.js", "app.py", "schema.sql"]
+        },
+        {
+          "id": "seller_upload_image",
+          "actor": "Seller",
+          "function": "seller.js image_file change listener",
+          "action": "Uploads selected image as multipart form data.",
+          "request": "POST /api/seller/upload.",
+          "backend": ["app.py upload_product_image()", "require_role('seller')", "secure_filename()"],
+          "persistence": "Checks allowed image extension and MIME type, saves a UUID-named file in static/uploads, returns image_url.",
+          "source": ["static/seller.js", "app.py"]
+        },
+        {
+          "id": "seller_update_product",
+          "function": "app.py update_product(product_id)",
+          "request": "PUT /api/seller/products/<product_id>.",
+          "action": "Validates seller ownership under a row lock, updates listing fields, replaces product_stock rows, then commits.",
+          "source": ["static/seller.js", "app.py"]
+        },
+        {
+          "id": "seller_remove_product",
+          "function": "app.py delete_product(product_id)",
+          "request": "DELETE /api/seller/products/<product_id>.",
+          "action": "Sets active to FALSE for the signed-in seller's active listing; this is a soft delete preserving references from past orders.",
+          "source": ["static/seller.js", "app.py"]
+        }
+      ],
+      "output": "A products row and associated product_stock rows keyed to the seller. Optional uploaded image is saved under static/uploads and its URL can be used by the product."
+    },
+    {
+      "id": "catalog_browse",
+      "title": "Customer browses products",
+      "steps": [
+        {
+          "id": "catalog_request",
+          "actor": "Customer",
+          "function": "shop.js initial fetch('/api/products')",
+          "request": "GET /api/products.",
+          "backend": ["app.py list_products()", "product_rows(connection)", "legacy_products()", "services.catalog.search_catalog()", "services.catalog.sort_catalog()"],
+          "data_sources": ["Active seller listings and stock from MariaDB.", "Legacy products from products.json and available images under assets/."],
+          "algorithms": ["services.catalog.search_catalog() uses linear_search_all() only if the q query parameter is non-empty.", "services.catalog.sort_catalog() uses merge_sort() to order the resulting catalog by case-folded product name."],
+          "result": "JSON catalog consumed by renderCategories() and render() in shop.js.",
+          "source": ["static/shop.js", "app.py", "services/catalog.py", "dsa/searching.py", "dsa/sorting.py", "products.json", "assets/"]
+        },
+        {
+          "id": "catalog_browser_controls",
+          "actor": "Customer",
+          "function": "shop.js renderCategories() and render()",
+          "action": "Applies interactive brand, category, and text filtering, and optional price sorting in browser JavaScript.",
+          "important_distinction": "These live UI controls use JavaScript array operations, not the custom Python linear search or merge sort.",
+          "source": ["static/shop.js", "static/index.html"]
+        },
+        {
+          "id": "legacy_browse_only",
+          "function": "app.py legacy_products()",
+          "action": "Adds legacy catalog entries with no price and no stock; shop.js displays them as not currently purchasable.",
+          "source": ["app.py", "products.json", "static/shop.js"]
+        }
+      ],
+      "output": "Customer sees active database listings and legacy browse-only products. Purchasable items require an available seller listing with price and stock sizes."
+    },
+    {
+      "id": "customer_cart",
+      "title": "Customer builds a cart",
+      "steps": [
+        {
+          "id": "cart_add",
+          "function": "shop.js details(product) add-button handler",
+          "action": "Adds or increments a line identified by product id and size. The browser limits a line quantity to 10.",
+          "storage": "save() writes cart JSON to localStorage key your-brand-cart.",
+          "source": ["static/shop.js"]
+        }
+      ],
+      "output": "Browser-local cart lines; no MariaDB order is created until checkout."
+    },
+    {
+      "id": "checkout",
+      "title": "Customer checks out",
+      "steps": [
+        {
+          "id": "checkout_submit",
+          "actor": "Customer",
+          "function": "shop.js finish-demo click handler",
+          "request": "POST /api/orders with priority and cart items containing product_id, size, and quantity.",
+          "backend": ["app.py place_order()", "require_role('customer')", "services.ordering.order_lines_in_sequence()"],
+          "validation": "Requires non-empty items, priority urgent/express/standard, integer product ids, non-empty sizes, and integer quantities from 1 through 10.",
+          "dsa": "services.ordering.order_lines_in_sequence() enqueues validated items in dsa.queue.Queue and dequeues them FIFO. The Flask route performs database stock checks and updates afterward.",
+          "database_sequence": [
+            "Insert orders row.",
+            "For each item, SELECT matching product and product_stock row FOR UPDATE.",
+            "Reject missing/inactive product or insufficient size stock.",
+            "Decrement stock and insert order_items with seller_id and unit_price snapshot.",
+            "Commit all order and stock changes together."
+          ],
+          "failure": "A stock or availability ValueError triggers rollback and HTTP 409. Invalid request data returns HTTP 400. A role mismatch returns HTTP 401.",
+          "success": "Returns HTTP 201 with order_id, pending status, and priority. shop.js clears the localStorage cart and shows confirmation.",
+          "source": ["static/shop.js", "app.py", "services/ordering.py", "dsa/queue.py", "schema.sql"]
+        }
+      ],
+      "output": "Persisted orders and order_items, reduced product_stock, and initial pending status for each item.",
+      "handoff_to": "seller_fulfillment"
+    },
+    {
+      "id": "seller_fulfillment",
+      "title": "Seller fulfills order items",
+      "steps": [
+        {
+          "id": "seller_order_queue",
+          "function": "seller.js loadOrders() calls GET /api/seller/orders; app.py seller_orders()",
+          "action": "Selects order items assigned to the current seller, then calls services.fulfillment.order_work_list() to order the rows through PriorityQueue.",
+          "priority_key": "(priority rank, order_id, item_id), where urgent ranks before express, then standard.",
+          "note": "The priority queue orders the returned work list. A seller still initiates each status change.",
+          "source": ["static/seller.js", "app.py", "services/fulfillment.py", "dsa/priority_queue.py"]
+        },
+        {
+          "id": "seller_status_update",
+          "function": "seller.js order update handler calls PATCH /api/seller/order-items/<item_id>; app.py update_order_item(item_id)",
+          "action": "Allows exactly one forward step, pending to processing or processing to fulfilled. Locks the item row, updates order_items.status, inserts order_status_history, and commits.",
+          "source": ["static/seller.js", "app.py", "schema.sql"]
+        },
+        {
+          "id": "seller_status_undo",
+          "function": "seller.js undo-status click handler calls POST /api/seller/orders/undo-last-status; app.py undo_last_status()",
+          "action": "Loads this seller's not-yet-undone history ordered by id, calls services.fulfillment.latest_undoable() to use Stack and select the latest event, then locks the item, verifies current status equals event new_status, restores old_status, marks undone_at, and commits.",
+          "failure": "Returns HTTP 409 if there is no eligible event or the item's current status no longer matches the event.",
+          "source": ["static/seller.js", "app.py", "services/fulfillment.py", "dsa/stack.py", "schema.sql"]
+        }
+      ],
+      "output": "Current status is stored on order_items; each status change and undo marker is recorded in order_status_history.",
+      "handoff_to": "customer_order_history"
+    },
+    {
+      "id": "customer_order_history",
+      "title": "Customer views order status",
+      "steps": [
+        {
+          "id": "customer_orders_load",
+          "function": "account.js loadCustomerAccount() calls GET /api/auth/me then GET /api/orders; app.py current_account() then customer_orders()",
+          "action": "The API selects the signed-in customer's order items, product names, seller shop names, unit prices, and current statuses.",
+          "result": "account.js renders order item details and current fulfillment status.",
+          "shared_state": "Reads order_items.status, the same field updated by the seller fulfillment routes.",
+          "source": ["static/account.js", "app.py", "schema.sql"]
+        }
+      ],
+      "output": "Customer sees current item-level order history and statuses."
+    }
+  ],
+  "connections": [
+    {
+      "from": "customer_registration",
+      "to": "checkout",
+      "label": "users.id and customer role/session authorize checkout"
+    },
+    {
+      "from": "seller_registration",
+      "to": "seller_listing",
+      "label": "users.id and seller role/session identify listing owner"
+    },
+    {
+      "from": "seller_listing",
+      "to": "catalog_browse",
+      "label": "products and product_stock become the purchasable catalog"
+    },
+    {
+      "from": "catalog_browse",
+      "to": "customer_cart",
+      "label": "Customer selects a product and size into browser-local cart"
+    },
+    {
+      "from": "customer_cart",
+      "to": "checkout",
+      "label": "Cart lines are submitted as checkout items"
+    },
+    {
+      "from": "checkout",
+      "to": "seller_fulfillment",
+      "label": "orders and order_items persist seller_id, priority, and pending status"
+    },
+    {
+      "from": "seller_fulfillment",
+      "to": "customer_order_history",
+      "label": "Customer history reads the current order_items.status"
+    }
+  ],
+  "system_rules": [
+    "Customer and seller accounts use the same users table but separate role values. A role-protected route checks the role in the active Flask session.",
+    "Registration and login clear the current session before setting the new identity. Separate browser sessions are required to be signed in as a customer and seller at the same time.",
+    "The default Flask session is cookie-based. schema.sql has no session table.",
+    "Checkout is the point where a browser cart becomes a persisted order. Before then, the cart is localStorage state.",
+    "The checkout Queue is request-local and demonstrates FIFO ordering of validated lines; it is not a persistent or asynchronous job queue.",
+    "Checkout stock validation, stock decrements, order creation, and order-item inserts are committed together or rolled back on a handled availability/stock failure.",
+    "Order processing priority is for seller queue order only; it does not promise a delivery time.",
+    "Order status progresses pending to processing to fulfilled. The seller can request undo of the latest eligible status-change event.",
+    "DSA workflow helpers in services/ operate on in-memory values only; app.py retains HTTP, authorization, SQL, and transaction responsibilities.",
+    "Legacy products from products.json are browse-only because they have no price and no stock.",
+    "No payment, shipping label, payout, email, or production deployment integration is implemented.",
+    "The browser's live filtering and price sorting are JavaScript built-ins; custom Python search and merge sort are used by list_products for API catalog processing."
+  ],
+  "diagram_specification": {
+    "deliverable": "A self-contained interactive HTML page that visually explains the entire actual user journey and opens details when a diagram part is clicked.",
+    "audience": "A reader learning the system and tracing how a real customer and seller use the program.",
+    "layout": [
+      "Show the journey in connected stages: account creation, seller listing, catalog browsing, cart and checkout, seller fulfillment and undo, customer order history.",
+      "Use distinct visual lanes or columns for customer browser, seller browser, Flask backend, application services, DSA modules, MariaDB, and file/browser storage.",
+      "Keep each stage readable at typical laptop width; allow panning, zooming, or responsive reflow rather than shrinking labels excessively.",
+      "Show persisted state and the handoff between stages, especially seller listing to catalog, checkout to fulfillment, and fulfillment status to customer order history."
+    ],
+    "interaction": [
+      "Make each component and journey step clickable and keyboard accessible.",
+      "On click, show its title, plain-language explanation, actual function names, endpoint where applicable, important data read/written, and source file references.",
+      "Support selecting a journey step to highlight its incoming and outgoing connections.",
+      "Provide clear back/close behavior for the details panel and visible focus states."
+    ],
+    "visual_language": [
+      "Differentiate actors, browser pages/scripts, backend functions, DSA structures, database tables, and file/browser storage using labels and consistent shapes or colors.",
+      "Use directed arrows for calls and data handoffs. Label arrows with route, function, or state passed.",
+      "Use solid arrows for actual HTTP or code calls and a distinct style for persisted-state handoffs between stages."
+    ],
+    "technical": [
+      "Use only the facts and names in this JSON; do not invent routes, modules, functions, tables, runtime behavior, or business capabilities.",
+      "Keep the page self-contained and usable offline with no CDN, network API, build step, or framework dependency.",
+      "The HTML may transform this JSON into its visual model; do not manually replace its facts with duplicated conflicting content.",
+      "Include a small note that the source reflects static code review and is not a claim of runtime verification."
+    ],
+    "acceptance_criteria": [
+      "A viewer can follow the customer path from registration to browsing, cart, checkout, and order history.",
+      "A viewer can follow the seller path from registration to listing, order queue, status update, and undo.",
+      "The arrows clearly communicate that checkout creates the database order items consumed by seller fulfillment, and that the customer history reads the same current item status.",
+      "Clicking every major diagram node reveals a useful explanation with its actual code references.",
+      "The diagram distinguishes browser-local cart data from MariaDB-persisted order data.",
+      "The diagram does not imply that payment or delivery is implemented."
+    ]
+  }
+}

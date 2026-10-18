@@ -1,0 +1,51 @@
+# Local credentials and environment configuration
+.env
+.env.*
+!.env.example
+.envrc
+
+# Python environments, bytecode, and test/tool caches
+.venv/
+venv/
+env/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+*.py[cod]
+.coverage
+htmlcov/
+
+# Local application output and user-generated content
+*.log
+.threadvault-server*.log
+static/uploads/
+instance/
+*.sqlite
+*.sqlite3
+*.db
+*.db-*
+*.dump
+*.bak
+
+# Private student/context documents; retain locally, do not publish
+Individual_Contribution_Report*.md
+ThreadVault_DSA_Context_Transfer.md
+CLAUDE_ARCHITECTURE_PROMPT.md
+DSA_System_Ontology.md
+README.md
+
+# Local editor and operating-system files
+.vscode/
+.idea/
+.ipynb_checkpoints/
+Thumbs.db
+Desktop.ini
+
+# Private key/certificate files
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
