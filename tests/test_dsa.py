@@ -16,6 +16,12 @@ def test_queue_is_fifo_and_tracks_size():
     assert queue.dequeue() == "A"
     assert queue.dequeue() == "B"
     assert queue.is_empty()
+    queue.enqueue("C")
+    assert queue.peek() == "C"
+    assert queue.dequeue() == "C"
+    assert queue.is_empty()
+    with pytest.raises(IndexError, match="peek from empty queue"):
+        queue.peek()
     with pytest.raises(IndexError):
         queue.dequeue()
 
@@ -28,6 +34,9 @@ def test_stack_is_lifo_and_tracks_size():
     assert stack.pop() == "last"
     assert stack.pop() == "first"
     assert stack.size() == 0
+    assert stack.is_empty()
+    with pytest.raises(IndexError, match="peek from empty stack"):
+        stack.peek()
     with pytest.raises(IndexError):
         stack.pop()
 
@@ -40,6 +49,21 @@ def test_priority_queue_orders_priority_then_arrival():
     assert [queue.extract_min(), queue.extract_min(), queue.extract_min()] == [
         "urgent one", "urgent two", "standard"
     ]
+    assert queue.is_empty()
+    with pytest.raises(IndexError, match="peek from empty priority queue"):
+        queue.peek()
+    with pytest.raises(IndexError, match="extract_min from empty priority queue"):
+        queue.extract_min()
+
+
+def test_priority_queue_peek_does_not_remove_item():
+    queue = PriorityQueue()
+    queue.insert("later", 2)
+    queue.insert("sooner", 1)
+
+    assert queue.peek() == "sooner"
+    assert queue.size() == 2
+    assert queue.extract_min() == "sooner"
 
 
 def test_sorts_match_expected_order_and_preserve_equal_key_order():

@@ -2,22 +2,31 @@
 
 
 class PriorityQueue:
+    """Return the lowest-priority value first, preserving insertion order on ties.
+
+    The heap is stored in an array. For each entry at index i, its priority
+    and sequence number are no greater than those of its children.
+    """
+
     def __init__(self):
         self._heap = []
         self._sequence = 0
 
     def insert(self, item, priority):
+        """Add an item in O(log n) time."""
         entry = (priority, self._sequence, item)
         self._sequence += 1
         self._heap.append(entry)
         self._sift_up(len(self._heap) - 1)
 
     def peek(self):
+        """Return the next item without removing it, in O(1) time."""
         if not self._heap:
             raise IndexError("peek from empty priority queue")
         return self._heap[0][2]
 
     def extract_min(self):
+        """Remove and return the lowest-priority item in O(log n) time."""
         if not self._heap:
             raise IndexError("extract_min from empty priority queue")
         if len(self._heap) == 1:
@@ -28,9 +37,11 @@ class PriorityQueue:
         return minimum
 
     def is_empty(self):
+        """Return whether the priority queue contains no items, in O(1) time."""
         return not self._heap
 
     def size(self):
+        """Return the number of items in O(1) time."""
         return len(self._heap)
 
     def _sift_up(self, index):
